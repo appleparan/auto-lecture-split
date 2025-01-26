@@ -139,6 +139,7 @@ dmypy.json
 
 # output
 outputs/
+output/
 
 # configurations
 # configs/*.toml
