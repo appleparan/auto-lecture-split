@@ -144,4 +144,5 @@ outputs/
 # configs/*.toml
 
 # data directory
-# data
+data/
+
