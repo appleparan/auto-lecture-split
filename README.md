@@ -1,6 +1,13 @@
 # auto-lecture-split
 
+Inspired by [hyesik/auto-lecture-note](https://github.com/hyeshik/auto-lecture-note),
+I created a program that segments the video transcript based on timestamps determined by slide transition.
 
+## How to use it
+
+```shell
+uv run split --help
+```
 
 
 ## Project Organization
@@ -18,36 +25,15 @@ auto_lecture_split/
 │   └── model1.yaml
 │
 ├── data
-│   ├── external                # Data from third party sources.
-│   ├── interim                 # Intermediate data that has been transformed.
-│   ├── processed               # The final, canonical data sets for modeling.
-│   └── raw                     # The original, immutable data dump.
 │
 ├── docs                        # Project documentation.
 │
 ├── models                      # Trained and serialized models.
 │
-├── notebooks                   # Jupyter notebooks.
-│
-├── references                  # Data dictionaries, manuals, and all other explanatory materials.
-│
-├── reports                     # Generated analysis as HTML, PDF, LaTeX, etc.
-│   └── figures                 # Generated graphics and figures to be used in reporting.
-│
 ├── pyproject.toml              # The pyproject.toml file for reproducing the analysis environment.
 ├── src/tests                   # Unit test files.
 │
 └── src/auto_lecture_split      # Source code for use in this project.
-    │
-    ├── __init__.py             # Makes auto_lecture_split a Python module
-    │
-    ├── cli.py                  # Default CLI program
-    │
-    ├── data                    # Data engineering scripts.
-    │
-    ├── models                  # ML model engineering (a folder for each model).
-    │
-    └── visualization           # Scripts to create exploratory and results oriented visualizations.
 ```
 
 ## For Developers
@@ -100,7 +86,7 @@ uvx ruff check --fix .
 
 ### Formatting
 ```shell
-uvx ruff fmt
+uvx ruff format
 ```
 
 ### Run pre-commit
