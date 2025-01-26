@@ -55,6 +55,12 @@ def split_file(
             help='Overwrite the existing output files.',
         ),
     ] = False,
+    frame_skip: Annotated[
+        int,
+        typer.Option(
+            help='Number of frames to skip for slide change detection.',
+        ),
+    ] = 60,
     threshold: Annotated[
         float,
         typer.Option(
@@ -88,7 +94,11 @@ def split_file(
     )
     typer.echo('Transcription completed.')
 
-    slide_changes = detect_slide_changes(video_path, threshold=threshold)
+    slide_changes = detect_slide_changes(
+        video_path, frame_skip=frame_skip, threshold=threshold
+    )
+    typer.echo('Slide changes are detected.')
+
     df = align_transcription_with_slides(transcriptions, slide_changes)  # noqa: PD901
     typer.echo('Transcription is aligned with slides.')
 

@@ -106,11 +106,15 @@ def transcribe_audio(
     return result['segments']
 
 
-def detect_slide_changes(video_path: str, threshold: float = 0.5) -> list:
+def detect_slide_changes(
+    video_path: str, frame_skip: int = 60, threshold: float = 0.5
+) -> list:
     """Detects slide changes in the video by analyzing frame differences.
 
     Args:
         video_path (str): Path to the input video file.
+        frame_skip (int, optional): Number of frames to skip between comparisons.
+            Defaults to 60.
         threshold (float, optional): Structural similarity threshold to detect changes.
             Defaults to 0.5.
 
@@ -120,17 +124,24 @@ def detect_slide_changes(video_path: str, threshold: float = 0.5) -> list:
     cap = cv2.VideoCapture(video_path)
     prev_frame = None
     timestamps = []
+    frame_count = 0
 
     while cap.isOpened():
         ret, frame = cap.read()
         if not ret:
             break
+
+        frame_count += 1
+        if frame_count % frame_skip != 0:
+            continue  # 지정된 간격으로 프레임 건너뛰기
+
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         if prev_frame is not None:
             score = ssim(prev_frame, gray)
             if score < threshold:
                 timestamps.append(cap.get(cv2.CAP_PROP_POS_MSEC) / 1000)
         prev_frame = gray
+
     cap.release()
     return timestamps
 
