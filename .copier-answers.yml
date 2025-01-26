@@ -1,0 +1,24 @@
+# Changes here will be overwritten by Copier
+_commit: v0.6.1
+_src_path: gh:appleparan/copier-modern-ml
+author_email: jongsukim8@gmail.com
+author_fullname: Jongsu Liam Kim
+ci: github
+configs_dir: configs
+copyright_date: '2025'
+copyright_holder: Jongsu Liam Kim
+copyright_holder_email: jongsukim8@gmail.com
+copyright_license: Apache License 2.0
+data_dir: data
+examples_dir: examples
+models_dir: models
+native_tls: false
+notebooks_dir: notebooks
+package: true
+project_description: Transcribe video and split subtitle into timeline
+project_name: auto-lecture-split
+project_slug: auto_lecture_split
+references_dir: references
+reports_dir: reports
+version: 0.1.0
+
