@@ -59,6 +59,7 @@ def nlp(
         random_seed=random_seed,
     )
 
+
 @app.command()
 def tabular(
     max_epochs: int = 10,
