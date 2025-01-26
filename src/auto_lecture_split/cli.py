@@ -1,12 +1,17 @@
 """CLI module."""
 
 from pathlib import Path
+from typing import Annotated
 
 import typer
 
-from auto_lecture_split.nlp import train_boolq
-from auto_lecture_split.tabular import train_titanic
-from auto_lecture_split.vision import train_mnist
+from auto_lecture_split.video_file import (
+    align_transcription_with_slides,
+    convert_to_mp4,
+    detect_slide_changes,
+    extract_audio,
+    transcribe_audio,
+)
 
 app = typer.Typer(pretty_exceptions_show_locals=False)
 ROOT_DIR = Path(__file__).resolve().parents[2]
@@ -21,130 +26,96 @@ def hello() -> None:
     typer.echo('Hello, world!')
 
 
-@app.command()
-def nlp(
-    max_epochs: int = 10,
-    accelerator: str = 'auto',
-    devices: str = 'auto',
-    deterministic: bool = True,  # noqa: FBT001, FBT002
-    random_seed: int = 42,
-) -> None:
-    """NLP training CLI entrypoint.
+def whisper_complete_name() -> list[str]:
+    """Auto-completion function for Whisper model names.
 
-    This command trains an NLP model using the specified configuration options.
-
-    Args:
-        max_epochs (int, optional):
-            Maximum number of training epochs. Defaults to 10.
-        accelerator (str, optional):
-            Accelerator type (e.g., "cpu", "gpu", "tpu"). Defaults to "auto".
-        devices (str, optional):
-            Number of devices to use for training. Can be an integer, a string
-            ("auto"), or a list of device IDs. Defaults to "auto".
-            However, due to limitation of typer, this should be a string.
-        deterministic (bool, optional):
-            Whether to use deterministic algorithms for reproducibility.
-            Sets the `torch.backends.cudnn.deterministic` flag. Defaults to True.
-        random_seed (int, optional):
-            Random seed for reproducibility. Defaults to 42.
+    Returns:
+        list[str]: A list of available Whisper model names.
     """
-    typer.echo('Starting NLP training...')
-    typer.echo(f'Project root directory: {ROOT_DIR}')
-    train_boolq(
-        ROOT_DIR,
-        max_epochs=max_epochs,
-        accelerator=accelerator,
-        devices=devices,
-        deterministic=deterministic,
-        random_seed=random_seed,
-    )
+    return ['tiny', 'small', 'medium', 'large', 'turbo']
 
 
 @app.command()
-def tabular(
-    max_epochs: int = 10,
-    accelerator: str = 'auto',
-    devices: str = 'auto',
-    deterministic: bool = True,  # noqa: FBT001, FBT002
-    random_seed: int = 42,
+def split_file(
+    video_path: Annotated[str, typer.Argument(help='Path to the input video file.')],
+    whipser_model: Annotated[
+        str,
+        typer.Option(
+            help=(
+                'Model size to use for transcription. '
+                'Available options are '
+                '"tiny", "small", "medium", "large", "turbo".'
+            ),
+            autocompletion=whisper_complete_name,
+        ),
+    ] = 'turbo',
+    overwrite: Annotated[  # noqa: FBT002
+        bool,
+        typer.Option(
+            help='Overwrite the existing output files.',
+        ),
+    ] = False,
+    threshold: Annotated[
+        float,
+        typer.Option(
+            help='Threshold for slide change detection. (SSIM)',
+        ),
+    ] = 0.5,
 ) -> None:
-    """Vision training CLI entrypoint.
+    """Transcribe the audio of a video file."""
+    # Check if the video file is in MKV format
+    video_path = Path(video_path)
+    if video_path.suffix.lower() == '.mkv':
+        typer.echo('Converting video file to MP4 format...')
+        video_path = convert_to_mp4(video_path, overwrite=overwrite)
+        typer.echo('Video file is saved at: ' + str(video_path))
 
-    This command trains a tabular model using the specified configuration options.
+    typer.echo('Transcribing audio...')
 
-    Args:
-        max_epochs (int, optional):
-            Maximum number of training epochs. Defaults to 10.
-        accelerator (str, optional):
-            Accelerator type (e.g., "cpu", "gpu", "tpu"). Defaults to "auto".
-        devices (str, optional):
-            Number of devices to use for training. Can be an integer, a string
-            ("auto"), or a list of device IDs. Defaults to "auto".
-            However, due to limitation of typer, this should be a string.
-        deterministic (bool, optional):
-            Whether to use deterministic algorithms for reproducibility.
-            Sets the `torch.backends.cudnn.deterministic` flag. Defaults to True.
-        random_seed (int, optional):
-            Random seed for reproducibility. Defaults to 42.
-    """
-    typer.echo('Starting tabular training...')
-    typer.echo(f'Project root directory: {ROOT_DIR}')
-    train_titanic(
-        ROOT_DIR,
-        max_epochs=max_epochs,
-        accelerator=accelerator,
-        devices=devices,
-        deterministic=deterministic,
-        random_seed=random_seed,
+    video_file_name = Path(video_path).stem
+    audio_path = ROOT_DIR / 'output' / 'audio' / f'{video_file_name}.wav'
+    _ = extract_audio(video_path, audio_path, overwrite=overwrite)
+    typer.echo('Audio is save at: ' + str(audio_path))
+
+    transcription_path = (
+        ROOT_DIR / 'output' / 'transcription' / f'{video_file_name}.txt'
     )
-
-
-@app.command()
-def vision(
-    max_epochs: int = 10,
-    accelerator: str = 'auto',
-    devices: str = 'auto',
-    deterministic: bool = True,  # noqa: FBT001, FBT002
-    random_seed: int = 42,
-) -> None:
-    """Vision training CLI entrypoint.
-
-    This command trains a vision model using the specified configuration options.
-
-    Args:
-        max_epochs (int, optional):
-            Maximum number of training epochs. Defaults to 10.
-        accelerator (str, optional):
-            Accelerator type (e.g., "cpu", "gpu", "tpu"). Defaults to "auto".
-        devices (str, optional):
-            Number of devices to use for training. Can be an integer, a string
-            ("auto"), or a list of device IDs. Defaults to "auto".
-            However, due to limitation of typer, this should be a string.
-        deterministic (bool, optional):
-            Whether to use deterministic algorithms for reproducibility.
-            Sets the `torch.backends.cudnn.deterministic` flag. Defaults to True.
-        random_seed (int, optional):
-            Random seed for reproducibility. Defaults to 42.
-    """
-    typer.echo('Starting vision training...')
-    typer.echo(f'Project root directory: {ROOT_DIR}')
-    train_mnist(
-        ROOT_DIR,
-        max_epochs=max_epochs,
-        accelerator=accelerator,
-        devices=devices,
-        deterministic=deterministic,
-        random_seed=random_seed,
+    transcriptions = transcribe_audio(
+        audio_path,
+        transcription_path=transcription_path,
+        size=whipser_model,
+        overwrite=overwrite,
     )
+    typer.echo('Transcription completed.')
+
+    slide_changes = detect_slide_changes(video_path, threshold=threshold)
+    df = align_transcription_with_slides(transcriptions, slide_changes)  # noqa: PD901
+    typer.echo('Transcription is aligned with slides.')
+
+    output_dir = ROOT_DIR / 'output' / 'final'
+    output_dir.mkdir(parents=True, exist_ok=True)
+    # Get filename of video file without extension
+    video_file_name = Path(video_path).stem
+    df.to_csv(output_dir / f'slides_transcript_{video_file_name}.csv', index=False)
+
+
+# @app.command()
+# def split_file(
+#     youtube_link: Annotated[str,
+#         typer.Argument(help='Path to the input youtube link.')],
+#     whipser_model: Annotated[
+#         str,
+#         typer.Option(
+#             'turbo',
+#             help='Model size to use for transcription.',
+#             autocompletion=whisper_complete_name,
+#         ),
+#     ] = 'turbo',
+# ) -> None:
+#     """Transcribe the audio of a youtube."""
+#     pass
 
 
 def main() -> None:
-    """Main entrypoint for the CLI application.
-
-    Runs the Typer app to handle user commands.
-    """
+    """Main function for the CLI."""
     app()
-
-
-if __name__ == '__main__':
-    main()
