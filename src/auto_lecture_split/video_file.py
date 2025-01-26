@@ -5,7 +5,7 @@ import cv2
 import pandas as pd
 import whisper
 from skimage.metrics import structural_similarity as ssim
-
+from rich.progress import Progress
 
 def convert_to_mp4(video_path: Path, overwrite: bool = False) -> Path:  # noqa: FBT001, FBT002
     """Converts an MKV video file to MP4 format.
@@ -124,23 +124,30 @@ def detect_slide_changes(
     cap = cv2.VideoCapture(video_path)
     prev_frame = None
     timestamps = []
-    frame_count = 0
 
-    while cap.isOpened():
-        ret, frame = cap.read()
-        if not ret:
-            break
+    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
-        frame_count += 1
-        if frame_count % frame_skip != 0:
-            continue  # 지정된 간격으로 프레임 건너뛰기
+    with Progress() as progress:
+        task = progress.add_task("[cyan]Processing video...", total=total_frames // frame_skip)
+        frame_count = 0
 
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        if prev_frame is not None:
-            score = ssim(prev_frame, gray)
-            if score < threshold:
-                timestamps.append(cap.get(cv2.CAP_PROP_POS_MSEC) / 1000)
-        prev_frame = gray
+        while cap.isOpened():
+            ret, frame = cap.read()
+            if not ret:
+                break
+
+            frame_count += 1
+            if frame_count % frame_skip != 0:
+                continue
+
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+            if prev_frame is not None:
+                score = ssim(prev_frame, gray)
+                if score < threshold:
+                    timestamps.append(cap.get(cv2.CAP_PROP_POS_MSEC) / 1000)
+            prev_frame = gray
+            progress.update(task, advance=1)
 
     cap.release()
     return timestamps
