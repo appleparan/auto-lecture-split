@@ -111,7 +111,6 @@ def split_file(
         language=language,
         overwrite=overwrite,
     )
-    print(transcriptions)
     typer.echo('Transcription completed.')
 
     slide_changes = detect_slide_changes(

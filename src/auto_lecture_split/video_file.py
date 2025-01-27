@@ -172,12 +172,13 @@ def detect_slide_changes(
 
 
 def align_transcription_with_slides(
-    transcriptions: list[str], slide_times: list[str]
+    transcriptions: list[tuple[str, str, str]], slide_times: list[str]
 ) -> pd.DataFrame:
     """Aligns transcription segments with detected slide changes based on timestamps.
 
     Args:
-        transcriptions (list): List of transcription segments with timestamps.
+        transcriptions (list[tuple[str, str, str]]):
+            List of transcription segments with timestamps.
         slide_times (list): List of timestamps indicating slide changes.
 
     Returns:
@@ -188,10 +189,13 @@ def align_transcription_with_slides(
     for slide_start, slide_end in zip(
         slide_times, slide_times[1:] + [None], strict=False
     ):
+        # seg[0] == 'start'
+        # seg[1] == 'end'
+        # seg[2] == 'text'
         slide_text = ' '.join(
-            seg['text']
+            seg[2]
             for seg in transcriptions
-            if slide_start <= seg['start'] < (slide_end or float('inf'))
+            if slide_start <= float(seg[0]) < (slide_end or float('inf'))
         )
         data.append({'start': slide_start, 'end': slide_end, 'text': slide_text})
     return pd.DataFrame(data)
