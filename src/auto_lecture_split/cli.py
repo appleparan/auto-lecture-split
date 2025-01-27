@@ -116,6 +116,7 @@ def split_file(
     slide_changes = detect_slide_changes(
         video_path, frame_skip=frame_skip, threshold=threshold
     )
+    print(slide_changes)
     typer.echo('Slide changes are detected.')
 
     df = align_transcription_with_slides(transcriptions, slide_changes)  # noqa: PD901
