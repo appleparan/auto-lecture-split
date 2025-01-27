@@ -4,6 +4,7 @@
 
 - Update CHANGELOG for version refs/heads/main ([e49ddca](https://github.com/vince-test-org/changelog-generator-example/commit/e49ddca95492520c11043057d74751c83a233baa))
 - Add CHANGELOG.md and RELEASE.md to release 0.1.1 ([4e3d5cf](https://github.com/vince-test-org/changelog-generator-example/commit/4e3d5cf24e3e75c0f7529fe0b79c2d3ef4f2a7cb))
+- Add CHANGELOG.md and RELEASE.md to release 0.1.1 ([65e6029](https://github.com/vince-test-org/changelog-generator-example/commit/65e60298891f19eba54739d18a2251c2dd991ddf))
 
 ### Miscellaneous Tasks
 
