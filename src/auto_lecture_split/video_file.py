@@ -102,8 +102,10 @@ def transcribe_audio(
     model = whisper.load_model(size)
     if not overwrite and transcription_path.exists():
         # read the existing transcription file
-        with Path(transcription_path).open('r') as file:
-            return file.readlines()
+        return [
+            (caption.start, caption.end, caption.text)
+            for caption in webvtt.read(transcription_path.resolve(), encoding='utf8')
+        ]
 
     result = model.transcribe(
         str(Path(audio_path).resolve()),
