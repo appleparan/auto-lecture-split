@@ -75,6 +75,8 @@ def transcribe_audio(
     audio_path: Path,
     transcription_path: Path,
     size: str = 'turbo',
+    language: str = 'ko',
+    initial_prompt: str = '',
     overwrite: bool = False,  # noqa: FBT001, FBT002
 ) -> list[dict[str, str | int | float]]:
     """Transcribes the given audio file using the Whisper model.
@@ -85,6 +87,9 @@ def transcribe_audio(
         size (str, optional): Model size to use for transcription.
             Available options are "tiny", "small", "medium", "large", and "turbo".
             Defaults to "turbo".
+        language (str, optional): Language code for the transcription.
+            Defaults to "ko".
+        initial_prompt (str, optional): Path to the initial prompt file.
         overwrite (bool, optional): Overwrite the existing output file.
             Defaults to False.
 
@@ -98,12 +103,18 @@ def transcribe_audio(
         with Path(transcription_path).open('r') as file:
             return file.readlines()
 
-    result = model.transcribe(str(Path(audio_path).resolve()))
+    result = model.transcribe(
+        str(Path(audio_path).resolve()),
+        language=language,
+        initial_prompt=initial_prompt,
+    )
 
     # Create the transcription file directory
     transcription_path.parent.mkdir(parents=True, exist_ok=True)
-    writer = get_writer('vtt', transcription_path)
-    writer.write_result(result)
+
+    with transcription_path.open('w', encoding='utf-8') as file:
+        writer = get_writer('vtt', transcription_path.parent)
+        writer.write_result(result, file)
 
     return [
         (caption.start, caption.end, caption.text)

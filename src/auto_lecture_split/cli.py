@@ -49,6 +49,18 @@ def split_file(
             autocompletion=whisper_complete_name,
         ),
     ] = 'turbo',
+    initial_prompt_path: Annotated[
+        str,
+        typer.Option(
+            help='Path to the initial prompt file.',
+        ),
+    ] = '',
+    language: Annotated[
+        str,
+        typer.Option(
+            help='Language code for the transcription.',
+        ),
+    ] = 'ko',
     overwrite: Annotated[  # noqa: FBT002
         bool,
         typer.Option(
@@ -83,15 +95,23 @@ def split_file(
     _ = extract_audio(video_path, audio_path, overwrite=overwrite)
     typer.echo('Audio is save at: ' + str(audio_path))
 
+    # Transcribe the audio
+    ## Get initial prompt from the initial_prompt_path
+    if initial_prompt_path or initial_prompt_path != '':
+        with Path(initial_prompt_path).open('r') as f:
+            initial_prompt = f.read()
     transcription_path = (
         ROOT_DIR / 'output' / 'transcription' / f'{video_file_name}.txt'
     )
     transcriptions = transcribe_audio(
         audio_path,
         transcription_path=transcription_path,
+        initial_prompt=initial_prompt,
         size=whipser_model,
+        language=language,
         overwrite=overwrite,
     )
+    print(transcriptions)
     typer.echo('Transcription completed.')
 
     slide_changes = detect_slide_changes(
