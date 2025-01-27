@@ -1,8 +1,8 @@
-## [unreleased]
+## [0.1.1] - 2025-01-27
 
 ### Miscellaneous Tasks
 
-- Bump version to refs/heads/main ([76b7e99](https://github.com/vince-test-org/changelog-generator-example/commit/76b7e992e4c660f7d6b24c2fe2d54f9c85f033fa))
+- Update GitHub Actions for release ([86f1595](https://github.com/vince-test-org/changelog-generator-example/commit/86f1595e3e15f74ca45f1f0ec114ccdc9b7a3a37))
 
 ## [0.1.0] - 2025-01-27
 
