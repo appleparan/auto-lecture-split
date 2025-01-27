@@ -1,8 +1,14 @@
 ## [0.1.1] - 2025-01-27
 
+### Documentation
+
+- Update CHANGELOG for version refs/heads/main ([e49ddca](https://github.com/vince-test-org/changelog-generator-example/commit/e49ddca95492520c11043057d74751c83a233baa))
+- Add CHANGELOG.md and RELEASE.md to release 0.1.1 ([4e3d5cf](https://github.com/vince-test-org/changelog-generator-example/commit/4e3d5cf24e3e75c0f7529fe0b79c2d3ef4f2a7cb))
+
 ### Miscellaneous Tasks
 
-- Update GitHub Actions for release ([86f1595](https://github.com/vince-test-org/changelog-generator-example/commit/86f1595e3e15f74ca45f1f0ec114ccdc9b7a3a37))
+- Bump version to refs/heads/main ([76b7e99](https://github.com/vince-test-org/changelog-generator-example/commit/76b7e992e4c660f7d6b24c2fe2d54f9c85f033fa))
+- Update GitHub Actions for release ([ede3dc1](https://github.com/vince-test-org/changelog-generator-example/commit/ede3dc16478d569bdbb6a0e93e828d2fc01537d3))
 
 ## [0.1.0] - 2025-01-27
 
