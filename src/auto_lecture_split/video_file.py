@@ -3,9 +3,12 @@ from pathlib import Path
 
 import cv2
 import pandas as pd
+import webvtt
 import whisper
-from skimage.metrics import structural_similarity as ssim
 from rich.progress import Progress
+from skimage.metrics import structural_similarity as ssim
+from whisper.utils import get_writer
+
 
 def convert_to_mp4(video_path: Path, overwrite: bool = False) -> Path:  # noqa: FBT001, FBT002
     """Converts an MKV video file to MP4 format.
@@ -86,10 +89,8 @@ def transcribe_audio(
             Defaults to False.
 
     Returns:
-        list[dict[str, str | int | float]]:
-            A list of transcription segments containing timestamps and text.
-            dictionary keys: 'id', 'seek', 'start', 'end', 'text'. 'temperature',
-                'avg_logprob', 'compression_ratio', 'no_speech_prob'
+        list[tuple[str, str, str]:
+            A list of transcription segments (start, end, text) in VTT format
     """
     model = whisper.load_model(size)
     if not overwrite and transcription_path.exists():
@@ -99,11 +100,15 @@ def transcribe_audio(
 
     result = model.transcribe(str(Path(audio_path).resolve()))
 
-    with Path(transcription_path).open('w') as file:
-        # write the transcription segments entirely to the file
-        file.write(''.join(result['segments']))
+    # Create the transcription file directory
+    transcription_path.parent.mkdir(parents=True, exist_ok=True)
+    writer = get_writer('vtt', transcription_path)
+    writer.write_result(result)
 
-    return result['segments']
+    return [
+        (caption.start, caption.end, caption.text)
+        for caption in webvtt.read(transcription_path.resolve())
+    ]
 
 
 def detect_slide_changes(
@@ -128,7 +133,9 @@ def detect_slide_changes(
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
     with Progress() as progress:
-        task = progress.add_task("[cyan]Processing video...", total=total_frames // frame_skip)
+        task = progress.add_task(
+            '[cyan]Processing video...', total=total_frames // frame_skip
+        )
         frame_count = 0
 
         while cap.isOpened():
