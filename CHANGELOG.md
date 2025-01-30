@@ -1,4 +1,14 @@
+## [0.2.1] - 2025-01-30
+
+### Miscellaneous Tasks
+
+- Bump version to 0.2.0 ([085d4cd](https://github.com/vince-test-org/changelog-generator-example/commit/085d4cd03f095ef67a5748e8e3d5c3846ea3ba88))
+
 ## [0.2.0] - 2025-01-30
+
+### Documentation
+
+- Add CHANGELOG.md and RELEASE.md to release v0.2.0 ([0008456](https://github.com/vince-test-org/changelog-generator-example/commit/0008456ad78b3ee3a573f472daa4b55c3943d71d))
 
 ### Features
 
