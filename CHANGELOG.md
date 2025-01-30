@@ -1,3 +1,9 @@
+## [0.2.0] - 2025-01-30
+
+### Features
+
+- Use scenedetect to detect slide changes ([618b6ff](https://github.com/vince-test-org/changelog-generator-example/commit/618b6ffdfdb7d513c275a26ac32ce447935e5d20))
+
 ## [0.1.0] - 2025-01-27
 
 ### Bug Fixes
@@ -20,6 +26,7 @@
 - Add CHANGELOG.md and RELEASE.md to release 0.1.1 ([4e3d5cf](https://github.com/vince-test-org/changelog-generator-example/commit/4e3d5cf24e3e75c0f7529fe0b79c2d3ef4f2a7cb))
 - Add CHANGELOG.md and RELEASE.md to release 0.1.1 ([65e6029](https://github.com/vince-test-org/changelog-generator-example/commit/65e60298891f19eba54739d18a2251c2dd991ddf))
 - Add CHANGELOG.md and RELEASE.md to release 0.1.1 ([2a2a899](https://github.com/vince-test-org/changelog-generator-example/commit/2a2a89960b0c2c4f3896ffee5cb6f27006e396be))
+- Add CHANGELOG.md and RELEASE.md to release v0.1.0 ([b8c5546](https://github.com/vince-test-org/changelog-generator-example/commit/b8c5546b50ba234da7bfb77a3dcaa809a84c5eaf))
 
 ### Features
 
