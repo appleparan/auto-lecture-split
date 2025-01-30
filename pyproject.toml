@@ -1,6 +1,6 @@
 [project]
 name = "auto_lecture_split"
-version = "0.2.0"
+version = "0.2.2"
 description = "Transcribe video and split subtitle into timeline"
 authors = [
     {name="Jongsu Liam Kim", email="jongsukim8@gmail.com"}
