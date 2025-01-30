@@ -215,7 +215,8 @@ def align_transcription_with_slides(
     ]
 
     # Convert slide times to float (seconds)
-    slide_times_float = [start.get_seconds() for start, _ in slide_times]
+    slide_times_start_float = [start.get_seconds() for start, _ in slide_times]
+    slide_times_end_float = [end.get_seconds() for _, end in slide_times]
 
     # Prepare result storage
     data = [
@@ -226,12 +227,12 @@ def align_transcription_with_slides(
     # Assign transcriptions to slide intervals using bisect
     for start_time, _, text in transcriptions:
         idx = (
-            bisect.bisect_right(slide_times_float, start_time) - 1
+            bisect.bisect_right(slide_times_start_float, start_time) - 1
         )  # Find the corresponding slide
         if (
             idx >= 0
             and idx < len(data)
-            and slide_times_float[idx] <= start_time < data[idx]['end']
+            and slide_times_start_float[idx] <= start_time < slide_times_end_float[idx]
         ):
             data[idx]['text'] += text + ' '
 
