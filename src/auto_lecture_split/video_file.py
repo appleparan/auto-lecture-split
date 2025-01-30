@@ -219,7 +219,7 @@ def align_transcription_with_slides(
 
     # Prepare result storage
     data = [
-        {'start': start.get_seconds(), 'end': end.get_seconds(), 'text': ''}
+        {'start': start.get_timecode(), 'end': end.get_timecode(), 'text': ''}
         for start, end in slide_times
     ]
 
