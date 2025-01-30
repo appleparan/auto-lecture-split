@@ -1,5 +1,6 @@
 """CLI module."""
 
+from enum import Enum
 from pathlib import Path
 from typing import Annotated
 
@@ -17,6 +18,22 @@ app = typer.Typer(pretty_exceptions_show_locals=False)
 ROOT_DIR = Path(__file__).resolve().parents[2]
 
 
+class WhisperModelName(str, Enum):
+    tiny = 'tiny'
+    small = 'small'
+    medium = 'medium'
+    large = 'large'
+    turbo = 'turbo'
+
+
+class DetectionMethod(str, Enum):
+    adaptive = 'adaptive'
+    content = 'content'
+    threshold = 'threshold'
+    histogram = 'histogram'
+    hash = 'hash'
+
+
 @app.command()
 def hello() -> None:
     """Hello function for the CLI.
@@ -26,7 +43,7 @@ def hello() -> None:
     typer.echo('Hello, world!')
 
 
-def whisper_complete_name() -> list[str]:
+def autocomplete_whisper_model_name() -> list[str]:
     """Auto-completion function for Whisper model names.
 
     Returns:
@@ -35,20 +52,29 @@ def whisper_complete_name() -> list[str]:
     return ['tiny', 'small', 'medium', 'large', 'turbo']
 
 
+def autocomplete_detection_method() -> list[str]:
+    """Auto-completion function for slide change detection methods.
+
+    Returns:
+        list[str]: A list of available detection methods.
+    """
+    return ['adaptive', 'content', 'threshold', 'histogram', 'hash']
+
+
 @app.command()
 def split_file(
     video_path: Annotated[str, typer.Argument(help='Path to the input video file.')],
     whipser_model: Annotated[
-        str,
+        WhisperModelName,
         typer.Option(
             help=(
                 'Model size to use for transcription. '
                 'Available options are '
                 '"tiny", "small", "medium", "large", "turbo".'
             ),
-            autocompletion=whisper_complete_name,
+            autocompletion=autocomplete_whisper_model_name,
         ),
-    ] = 'turbo',
+    ] = WhisperModelName.turbo,
     initial_prompt_path: Annotated[
         str,
         typer.Option(
@@ -67,18 +93,26 @@ def split_file(
             help='Overwrite the existing output files.',
         ),
     ] = False,
-    frame_skip: Annotated[
-        int,
+    detection_method: Annotated[
+        DetectionMethod,
         typer.Option(
-            help='Number of frames to skip for slide change detection.',
+            help=(
+                'Method for slide change detection. '
+                'Available options are '
+                '"adaptive", "content", "threshold", "histogram", and "hash".'
+                'See https://pyscenedetect.readthedocs.io/en/latest/reference/detection-methods/.'
+            ),
+            autocompletion=autocomplete_detection_method,
         ),
-    ] = 60,
+    ] = DetectionMethod.content,
     threshold: Annotated[
         float,
         typer.Option(
-            help='Threshold for slide change detection. (SSIM)',
+            help=(
+                'Threshold for slide change detection. Depends on the detection method.'
+            )
         ),
-    ] = 0.9,
+    ] = 2.0,
 ) -> None:
     """Transcribe the audio of a video file."""
     # Check if the video file is in MKV format
@@ -113,8 +147,16 @@ def split_file(
     )
     typer.echo('✅ Transcription completed.')
 
+    stat_dir = ROOT_DIR / 'output' / 'stats'
+    stat_dir.mkdir(parents=True, exist_ok=True)
+    video_file_name = Path(video_path).stem
+    stats_file_path = stat_dir / f'{video_file_name}_stats.csv'
+
     slide_changes = detect_slide_changes(
-        video_path, frame_skip=frame_skip, threshold=threshold
+        video_path,
+        method=detection_method,
+        threshold=threshold,
+        stats_file_path=stats_file_path,
     )
 
     # Print slide change count and details
@@ -128,9 +170,14 @@ def split_file(
 
     # Optionally display the exact timestamps
     for i, timestamp in enumerate(slide_changes, 1):
+        msg = (
+            f'  ➡ Slide {i}: {timestamp[0].get_timecode()} - '
+            f'{timestamp[1].get_timecode()}'
+        )
         typer.echo(
             typer.style(
-                f'  ➡ Slide {i}: {timestamp:.2f} seconds', fg=typer.colors.BRIGHT_BLUE
+                msg,
+                fg=typer.colors.BRIGHT_BLUE,
             )
         )
 

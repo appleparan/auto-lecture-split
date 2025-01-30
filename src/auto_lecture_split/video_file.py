@@ -3,12 +3,15 @@ import subprocess
 from datetime import datetime
 from pathlib import Path
 
-import cv2
 import pandas as pd
+import scenedetect
 import webvtt
 import whisper
-from rich.progress import Progress
-from skimage.metrics import structural_similarity as ssim
+from scenedetect.detectors.adaptive_detector import AdaptiveDetector
+from scenedetect.detectors.content_detector import ContentDetector
+from scenedetect.detectors.hash_detector import HashDetector
+from scenedetect.detectors.histogram_detector import HistogramDetector
+from scenedetect.detectors.threshold_detector import ThresholdDetector
 from whisper.utils import get_writer
 
 
@@ -128,51 +131,53 @@ def transcribe_audio(
 
 
 def detect_slide_changes(
-    video_path: str, frame_skip: int = 60, threshold: float = 0.5
-) -> list[float]:
-    """Detects slide changes in the video by analyzing frame differences.
+    video_path: str,
+    method: str,
+    threshold: float = 10.0,
+    stats_file_path: Path = Path('output') / 'stats.csv',
+) -> list[tuple[scenedetect.FrameTimecode, scenedetect.FrameTimecode]]:
+    """Detects slide changes in the video by scenedetector.
 
     Args:
         video_path (str): Path to the input video file.
-        frame_skip (int, optional): Number of frames to skip between comparisons.
-            Defaults to 60.
+        method (str): Method for slide change detection.
         threshold (float, optional): Structural similarity threshold to detect changes.
-            Defaults to 0.5.
+            Defaults to 10.0.
+        stats_file_path (Path, optional): Path to save the detection statistics.
 
     Returns:
-        list[float]: A list of timestamps (in seconds) where slide changes occur.
+        list[tuple[scenedetect.FrameTimecode, scenedetect.FrameTimecode]]:
+            List of scenes as pairs of (start, end) FrameTimecode objects.
     """
-    cap = cv2.VideoCapture(video_path)
-    prev_frame = None
-    timestamps = []
+    stats_manager = scenedetect.StatsManager()
+    scene_manager = scenedetect.SceneManager(stats_manager=stats_manager)
+    video = scenedetect.open_video(str(video_path.resolve()))
 
-    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    if method == 'adaptive':
+        detector = AdaptiveDetector(adaptive_threshold=threshold)
+    elif method == 'content':
+        detector = ContentDetector(threshold=threshold)
+    elif method == 'threshold':
+        detector = ThresholdDetector(threshold=threshold)
+    elif method == 'histogram':
+        detector = HistogramDetector(threshold=threshold)
+    elif method == 'hash':
+        detector = HashDetector(threshold=threshold)
+    else:
+        msg = f'Invalid detection method: {method}'
+        raise ValueError(msg)
 
-    with Progress() as progress:
-        task = progress.add_task(
-            '[cyan]Processing video...', total=total_frames // frame_skip
-        )
-        frame_count = 0
+    scene_manager.add_detector(detector)
 
-        while cap.isOpened():
-            ret, frame = cap.read()
-            if not ret:
-                break
+    # Detect all scenes in video from current position to end.
+    scene_manager.detect_scenes(video, show_progress=True)
+    timestamps: list[tuple[scenedetect.FrameTimecode, scenedetect.FrameTimecode]] = (
+        scene_manager.get_scene_list()
+    )
 
-            frame_count += 1
-            if frame_count % frame_skip != 0:
-                continue
+    # Save per-frame statistics to disk.
+    scene_manager.stats_manager.save_to_csv(csv_file=str(stats_file_path.resolve()))
 
-            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-
-            if prev_frame is not None:
-                score = ssim(prev_frame, gray)
-                if score < threshold:
-                    timestamps.append(cap.get(cv2.CAP_PROP_POS_MSEC) / 1000)
-            prev_frame = gray
-            progress.update(task, advance=1)
-
-    cap.release()
     return timestamps
 
 
@@ -188,14 +193,16 @@ def time_to_seconds(time_str: str) -> float:
 
 
 def align_transcription_with_slides(
-    transcriptions: list[tuple[str, str, str]], slide_times: list[str]
+    transcriptions: list[tuple[str, str, str]],
+    slide_times: list[tuple[scenedetect.FrameTimecode, scenedetect.FrameTimecode]],
 ) -> pd.DataFrame:
     """Aligns transcription segments with detected slide changes based on timestamps.
 
     Args:
         transcriptions (list[tuple[str, str, str]]):
             List of transcription segments with timestamps.
-        slide_times (list): List of timestamps indicating slide changes.
+        slide_times (list[tuple[scenedetect.FrameTimecode, scenedetect.FrameTimecode]]):
+            List of timestamps indicating slide changes.
 
     Returns:
         pd.DataFrame: A DataFrame containing start time, end time,
@@ -207,23 +214,24 @@ def align_transcription_with_slides(
         for seg in transcriptions
     ]
 
+    # Convert slide times to float (seconds)
+    slide_times_float = [start.get_seconds() for start, _ in slide_times]
+
     # Prepare result storage
     data = [
-        {'start': start, 'end': end, 'text': ''}
-        for start, end in zip(
-            slide_times, slide_times[1:] + [float('inf')], strict=False
-        )
+        {'start': start.get_seconds(), 'end': end.get_seconds(), 'text': ''}
+        for start, end in slide_times
     ]
 
     # Assign transcriptions to slide intervals using bisect
     for start_time, _, text in transcriptions:
         idx = (
-            bisect.bisect_right(slide_times, start_time) - 1
+            bisect.bisect_right(slide_times_float, start_time) - 1
         )  # Find the corresponding slide
         if (
             idx >= 0
             and idx < len(data)
-            and slide_times[idx] <= start_time < data[idx]['end']
+            and slide_times_float[idx] <= start_time < data[idx]['end']
         ):
             data[idx]['text'] += text + ' '
 
