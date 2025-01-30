@@ -1,4 +1,23 @@
+## [0.2.3] - 2025-01-30
+
+### Bug Fixes
+
+- Record timestamp as timecode ([96ad963](https://github.com/vince-test-org/changelog-generator-example/commit/96ad963438e6ebb772a4ac88ea795432740798bb))
+
+### Documentation
+
+- Update README ([039b788](https://github.com/vince-test-org/changelog-generator-example/commit/039b7881bc4e8d14d3b5f1638910c2f33739459f))
+
+### Miscellaneous Tasks
+
+- Generate output with timecode rather than seconds ([baeed55](https://github.com/vince-test-org/changelog-generator-example/commit/baeed55c3d55adf249276e9409dc814131595b84))
+- Bump version ([fc772f5](https://github.com/vince-test-org/changelog-generator-example/commit/fc772f5917c88fcde0294607eca158b4d8669877))
+
 ## [0.2.2] - 2025-01-30
+
+### Documentation
+
+- Add CHANGELOG.md and RELEASE.md to release v0.2.2 ([e0a3937](https://github.com/vince-test-org/changelog-generator-example/commit/e0a3937f12bc6597b022477bd3486cd315894c69))
 
 ### Miscellaneous Tasks
 
