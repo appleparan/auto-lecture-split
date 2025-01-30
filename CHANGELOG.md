@@ -1,4 +1,14 @@
+## [0.2.2] - 2025-01-30
+
+### Miscellaneous Tasks
+
+- Bump and align version ([f68bc67](https://github.com/vince-test-org/changelog-generator-example/commit/f68bc672a326f11703173c5677bde09df90ace3f))
+
 ## [0.2.1] - 2025-01-30
+
+### Documentation
+
+- Add CHANGELOG.md and RELEASE.md to release v0.2.1 ([6348d07](https://github.com/vince-test-org/changelog-generator-example/commit/6348d079c4f1729a60838e5475edec28216a378c))
 
 ### Miscellaneous Tasks
 
