@@ -1,13 +1,31 @@
 # auto-lecture-split
 
 Inspired by [hyesik/auto-lecture-note](https://github.com/hyeshik/auto-lecture-note),
-I created a program that segments the video transcript based on timestamps determined by slide transition.
+this tool processes lecture videos and generates structured transcripts with precise slide-based segmentation.
 
-## How to use it
+## ✨ Features
+* 📼 Lecture Video Processing – Supports MKV/MP4 files
+* 📝 Whisper-Based Transcription – Leverages OpenAI's Whisper for accurate speech-to-text conversion
+* 📊 Slide Transition Detection – Automatically segments text based on slide changes
+* ⏳ Timestamped Notes – Creates structured lecture notes aligned with the timeline
 
-```shell
-uv run split --help
-```
+📌 How to Use
+
+1. Add Your Video
+    * Place your *.mkv or *.mp4 lecture video inside the data/video directory.
+
+2. Prepare an Initial Prompt
+    * Provide an initial prompt for Whisper to improve transcription accuracy (highly recommended!).
+
+3. Run the Command
+    * Execute the following command, adjusting --threshold as needed (optimal value may vary by video):
+
+    ```shell
+    uv run split ./data/video/VIDEO_FILE_NAME.mp4 --whipser-model=turbo --initial-prompt-path=WHERE_PROMPT_SAVED.txt --threshold=2.0
+    ```
+
+4. Check the Output
+    * Processed transcripts will be saved in the output/final directory.
 
 
 ## Project Organization
