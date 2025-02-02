@@ -4,8 +4,10 @@ from enum import Enum
 from pathlib import Path
 from typing import Annotated
 
+import pandas as pd
 import typer
 
+from auto_lecture_split.audio import convert_to_wav
 from auto_lecture_split.video_file import (
     align_transcription_with_slides,
     convert_to_mp4,
@@ -197,6 +199,84 @@ def split_file(
     # Get filename of video file without extension
     video_file_name = Path(video_path).stem
     df.to_csv(output_dir / f'slides_transcript_{video_file_name}.csv', index=False)
+
+
+@app.command()
+def transcribe_audio_only(
+    audio_path: Annotated[str, typer.Argument(help='Path to the input video file.')],
+    whipser_model: Annotated[
+        WhisperModelName,
+        typer.Option(
+            help=(
+                'Model size to use for transcription. '
+                'Available options are '
+                '"tiny", "small", "medium", "large", "turbo".'
+            ),
+            autocompletion=autocomplete_whisper_model_name,
+        ),
+    ] = WhisperModelName.turbo,
+    initial_prompt_path: Annotated[
+        str,
+        typer.Option(
+            help='Path to the initial prompt file.',
+        ),
+    ] = '',
+    language: Annotated[
+        str,
+        typer.Option(
+            help='Language code for the transcription.',
+        ),
+    ] = 'ko',
+    overwrite: Annotated[  # noqa: FBT002
+        bool,
+        typer.Option(
+            help='Overwrite the existing output files.',
+        ),
+    ] = False,
+) -> None:
+    """Transcribe the audio of a video file."""
+    # Convert audio file (mp3 or m4a) to wav format
+    audio_path = Path(audio_path)
+    audio_file_name = Path(audio_path).stem
+    output_audio_path = ROOT_DIR / 'output' / 'audio' / f'{audio_file_name}.wav'
+
+    if audio_path.suffix.lower() in ['.mp3', '.m4a']:
+        typer.echo('🎵 Converting audio file to WAV format...')
+        audio_path = convert_to_wav(audio_path, output_audio_path, overwrite=overwrite)
+        typer.echo('📁 Audio file is saved at: ' + str(audio_path))
+    typer.echo('✅ Using audio at: ' + str(audio_path))
+
+    # Transcribe the audio
+    ## Get initial prompt from the initial_prompt_path
+    if initial_prompt_path or initial_prompt_path != '':
+        with Path(initial_prompt_path).open('r') as f:
+            initial_prompt = f.read()
+    transcription_path = (
+        ROOT_DIR / 'output' / 'transcription_audio_only' / f'{audio_file_name}.txt'
+    )
+    transcriptions = transcribe_audio(
+        audio_path,
+        transcription_path=transcription_path,
+        initial_prompt=initial_prompt,
+        size=whipser_model,
+        language=language,
+        overwrite=overwrite,
+    )
+    typer.echo('✅ Transcription completed.')
+
+    transcriptions = [
+        {'start': seg[0], 'end': seg[1], 'text': str(seg[2])} for seg in transcriptions
+    ]
+
+    # Convert to DataFrame and strip trailing spaces
+    df = pd.DataFrame(transcriptions)  # noqa: PD901
+    df['text'] = df['text'].str.strip()
+
+    output_dir = ROOT_DIR / 'output' / 'final_audio_only'
+    output_dir.mkdir(parents=True, exist_ok=True)
+    # Get filename of video file without extension
+    video_file_name = Path(audio_path).stem
+    df.to_csv(output_dir / f'transcript_{video_file_name}.csv', index=False)
 
 
 def main() -> None:
