@@ -4,28 +4,35 @@ Inspired by [hyesik/auto-lecture-note](https://github.com/hyeshik/auto-lecture-n
 this tool processes lecture videos and generates structured transcripts with precise slide-based segmentation.
 
 ## ✨ Features
-* 📼 Lecture Video Processing – Supports MKV/MP4 files
+* 📼 Lecture Video/Audio Processing – Supports MKV/MP4 and M4A/MP3 files
 * 📝 Whisper-Based Transcription – Leverages OpenAI's Whisper for accurate speech-to-text conversion
 * 📊 Slide Transition Detection – Automatically segments text based on slide changes
 * ⏳ Timestamped Notes – Creates structured lecture notes aligned with the timeline
 
 📌 How to Use
 
-1. Add Your Video
-    * Place your *.mkv or *.mp4 lecture video inside the data/video directory.
+1. Place your file (video/audio)
+    * Video: Place your `<VIDEO_FILE_NAME>.mkv` or `<VIDEO_FILE_NAME>.mp4` video file inside the `data/video` directory.
+    * Audio: Place your `<AUDIO_FILE_NAME>.m4a` or `<AUDIO_FILE_NAME>.mp3` audio file inside the `data/audio` directory.
 
 2. Prepare an Initial Prompt
     * Provide an initial prompt for Whisper to improve transcription accuracy (highly recommended!).
 
 3. Run the Command
-    * Execute the following command, adjusting --threshold as needed (optimal value may vary by video):
+    * Execute the following command, adjusting `--threshold` as needed (optimal value may vary by video):
 
+    * Video file
     ```shell
-    uv run split ./data/video/VIDEO_FILE_NAME.mp4 --whipser-model=turbo --initial-prompt-path=WHERE_PROMPT_SAVED.txt --threshold=2.0
+    uv run split split-video-file ./data/video/VIDEO_FILE_NAME.mp4 --whipser-model=turbo --initial-prompt-path=WHERE_PROMPT_SAVED.txt --threshold=2.0
+    ```
+
+    * Audieo file
+    ```shell
+    uv run split transcribe-audio-file ./data/audio/AUDIO_FILE_NAME.m4a --whipser-model=turbo --initial-prompt-path=WHERE_PROMPT_SAVED.txt
     ```
 
 4. Check the Output
-    * Processed transcripts will be saved in the output/final directory.
+    * Processed transcripts will be saved in the `output/final_*` directory.
 
 
 ## Project Organization
