@@ -1,5 +1,4 @@
 import bisect
-import subprocess
 from datetime import datetime
 from pathlib import Path
 
@@ -13,67 +12,6 @@ from scenedetect.detectors.hash_detector import HashDetector
 from scenedetect.detectors.histogram_detector import HistogramDetector
 from scenedetect.detectors.threshold_detector import ThresholdDetector
 from whisper.utils import get_writer
-
-
-def convert_to_mp4(video_path: Path, overwrite: bool = False) -> Path:  # noqa: FBT001, FBT002
-    """Converts an MKV video file to MP4 format.
-
-    Args:
-        video_path (str): Path to the input MKV video file.
-        overwrite (bool, optional): Overwrite the existing output file.
-            Defaults to False.
-
-    Returns:
-        str: Path to the converted MP4 video file.
-    """
-    video_path = Path(video_path)
-    if video_path.suffix.lower() == '.mkv':
-        mp4_path = video_path.with_suffix('.mp4')
-        if not overwrite and mp4_path.exists():
-            return str(mp4_path)
-        subprocess.run(  # noqa: S603
-            [  # noqa: S607
-                'ffmpeg',
-                '-i',
-                str(video_path),
-                '-c:v',
-                'copy',
-                '-c:a',
-                'aac',
-                str(mp4_path),
-                '-y',
-            ],
-            check=True,
-        )
-        return str(mp4_path)
-    return str(video_path)
-
-
-def extract_audio(
-    video_path: Path,
-    audio_path: Path = Path('output') / 'audio.wav',
-    overwrite: bool = False,  # noqa: FBT001, FBT002
-) -> Path:
-    """Extracts and save the audio from the given video file.
-
-    Args:
-        video_path (Path): Path to the input video file.
-        audio_path (Path, optional): Path to save the extracted audio file.
-            Defaults to "output/audio/[video_file_name].wav".
-        overwrite (bool, optional): Overwrite the existing output file.
-            Defaults to False.
-
-    Returns:
-        Path: Path to the saved audio file.
-    """
-    audio_path.parent.mkdir(parents=True, exist_ok=True)
-    if not overwrite and audio_path.exists():
-        return audio_path
-    subprocess.run(  # noqa: S603
-        ['ffmpeg', '-i', video_path, '-q:a', '0', '-map', 'a', audio_path, '-y'],  # noqa: S607
-        check=True,
-    )
-    return audio_path
 
 
 def transcribe_audio(
