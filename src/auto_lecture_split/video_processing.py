@@ -1,4 +1,5 @@
-import bisect
+import html
+import re
 from datetime import datetime
 from pathlib import Path
 
@@ -9,6 +10,16 @@ from scenedetect.detectors.content_detector import ContentDetector
 from scenedetect.detectors.hash_detector import HashDetector
 from scenedetect.detectors.histogram_detector import HistogramDetector
 from scenedetect.detectors.threshold_detector import ThresholdDetector
+
+# Regex to remove HTML tags
+PAT_HTML_TAGS = re.compile(r'</?[^>]+>')
+
+
+def clean_text(txt: str) -> str:
+    """Remove HTML tags (e.g., <c>, <b>) and decode HTML entities."""
+    txt = PAT_HTML_TAGS.sub('', txt)  # Remove all HTML tags
+    txt = html.unescape(txt)  # Unescape HTML entity(i.e. &nbsp;)
+    return txt.strip()
 
 
 def detect_slide_changes(
@@ -90,35 +101,34 @@ def align_transcription_with_slides(
             and transcribed text for each slide.
     """
     # Convert transcription times to float
-    transcriptions = [
-        (time_to_seconds(seg[0]), time_to_seconds(seg[1]), seg[2])
-        for seg in transcriptions
-    ]
+    transcriptions = [(seg['start'], seg['end'], seg['text']) for seg in transcriptions]
 
-    # Convert slide times to float (seconds)
-    slide_times_start_float = [start.get_seconds() for start, _ in slide_times]
-    slide_times_end_float = [end.get_seconds() for _, end in slide_times]
+    # Convert transcription times to DataFrame with float timestamps
+    transcript_df = pd.DataFrame(transcriptions, columns=['start', 'end', 'text'])
+    transcript_df['start'] = transcript_df['start'].apply(time_to_seconds)
+    transcript_df['end'] = transcript_df['end'].apply(time_to_seconds)
+    # Remove HTML code
+    transcript_df['text'] = transcript_df['text'].apply(clean_text)
 
-    # Prepare result storage
-    data = [
-        {'start': start.get_timecode(), 'end': end.get_timecode(), 'text': ''}
-        for start, end in slide_times
-    ]
+    # Convert slide times to DataFrame with float timestamps
+    slide_df = pd.DataFrame(
+        {
+            'start': [start.get_seconds() for start, _ in slide_times],
+            'end': [end.get_seconds() for _, end in slide_times],
+            'start_time': [start.get_timecode() for start, _ in slide_times],
+            'end_time': [end.get_timecode() for _, end in slide_times],
+            'text': [''] * len(slide_times),
+        }
+    )
 
-    # Assign transcriptions to slide intervals using bisect
-    for start_time, _, text in transcriptions:
-        idx = (
-            bisect.bisect_right(slide_times_start_float, start_time) - 1
-        )  # Find the corresponding slide
-        if (
-            idx >= 0
-            and idx < len(data)
-            and slide_times_start_float[idx] <= start_time < slide_times_end_float[idx]
-        ):
-            data[idx]['text'] += text + ' '
+    # Assign transcriptions to slide intervals using `.between()`
+    for idx, slide in slide_df.iterrows():
+        matching_transcripts = transcript_df[
+            transcript_df['start'].between(slide['start'], slide['end'])
+        ]
+        slide_df.loc[idx, 'text'] = ' '.join(matching_transcripts['text'].tolist())
 
-    # Convert to DataFrame and strip trailing spaces
-    df = pd.DataFrame(data)  # noqa: PD901
-    df['text'] = df['text'].str.strip()
+    # Strip any trailing spaces in transcript text
+    slide_df['text'] = slide_df['text'].str.strip()
 
-    return df
+    return slide_df
