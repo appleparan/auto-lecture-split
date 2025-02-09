@@ -8,13 +8,11 @@ import pandas as pd
 import typer
 
 from auto_lecture_split.audio import convert_to_wav, extract_audio
-from auto_lecture_split.audio_processing import transcribe_audio
+from auto_lecture_split.audio_processing import transcribe_audio, write_transcription
 from auto_lecture_split.video import convert_to_mp4
 from auto_lecture_split.video_processing import (
     align_transcription_with_slides,
     detect_slide_changes,
-    transcribe_audio,
-    write_transcription,
 )
 
 app = typer.Typer(pretty_exceptions_show_locals=False)
@@ -175,16 +173,15 @@ def split_video_file(
         transcription_path_txt = (
             ROOT_DIR / 'output' / 'transcription_audio_file' / f'{file_name}.txt'
         )
-        write_transcription(transcription_path_txt, trans_res)
+        write_transcription(trans_res, transcription_path_txt)
         transcription_path_json = (
             ROOT_DIR / 'output' / 'transcription_audio_file' / f'{file_name}.json'
         )
-        write_transcription(transcription_path_json, trans_res)
+        write_transcription(trans_res, transcription_path_json)
 
-        transcriptions = [
-            {'start': seg[0], 'end': seg[1], 'text': str(seg[2])}
-            for seg in transcriptions
-        ]
+    transcriptions = [
+        {'start': seg[0], 'end': seg[1], 'text': str(seg[2])} for seg in transcriptions
+    ]
 
     stat_dir = ROOT_DIR / 'output' / 'stats'
     stat_dir.mkdir(parents=True, exist_ok=True)
@@ -315,16 +312,15 @@ def transcribe_audio_file(
         transcription_path_txt = (
             ROOT_DIR / 'output' / 'transcription_audio_file' / f'{file_name}.txt'
         )
-        write_transcription(transcription_path_txt, trans_res)
+        write_transcription(trans_res, transcription_path_txt)
         transcription_path_json = (
             ROOT_DIR / 'output' / 'transcription_audio_file' / f'{file_name}.json'
         )
-        write_transcription(transcription_path_json, trans_res)
+        write_transcription(trans_res, transcription_path_json)
 
-        transcriptions = [
-            {'start': seg[0], 'end': seg[1], 'text': str(seg[2])}
-            for seg in transcriptions
-        ]
+    transcriptions = [
+        {'start': seg[0], 'end': seg[1], 'text': str(seg[2])} for seg in transcriptions
+    ]
 
     # Convert to DataFrame and strip trailing spaces
     df = pd.DataFrame(transcriptions)  # noqa: PD901

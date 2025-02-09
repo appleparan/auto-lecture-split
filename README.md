@@ -26,7 +26,7 @@ this tool processes lecture videos and generates structured transcripts with pre
     uv run split split-video-file ./data/video/VIDEO_FILE_NAME.mp4 --whipser-model=turbo --initial-prompt-path=WHERE_PROMPT_SAVED.txt --threshold=2.0
     ```
 
-    * Audieo file
+    * Audio file
     ```shell
     uv run split transcribe-audio-file ./data/audio/AUDIO_FILE_NAME.m4a --whipser-model=turbo --initial-prompt-path=WHERE_PROMPT_SAVED.txt
     ```
