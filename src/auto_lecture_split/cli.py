@@ -148,7 +148,7 @@ def split_video_file(
 
     file_name = Path(video_path).stem
     audio_path = ROOT_DIR / 'output' / 'audio' / f'{file_name}.wav'
-    extract_audio(video_path, audio_path, overwrite=overwrite)
+    extract_audio(Path(video_path), Path(audio_path), overwrite=overwrite)
     typer.echo('✅ Audio is save at: ' + str(audio_path))
 
     # Transcribe the audio
@@ -188,7 +188,7 @@ def split_video_file(
     stats_file_path = stat_dir / f'{file_name}_stats.csv'
 
     slide_changes = detect_slide_changes(
-        video_path,
+        Path(video_path),
         method=detection_method,
         threshold=threshold,
         stats_file_path=stats_file_path,
@@ -286,7 +286,9 @@ def transcribe_audio_file(
 
     if audio_path.suffix.lower() in ['.mp3', '.m4a']:
         typer.echo('🎵 Converting audio file to WAV format...')
-        audio_path = convert_to_wav(audio_path, output_audio_path, overwrite=overwrite)
+        audio_path = convert_to_wav(
+            Path(audio_path), Path(output_audio_path), overwrite=overwrite
+        )
         typer.echo('📁 Audio file is saved at: ' + str(audio_path))
     typer.echo('✅ Using audio at: ' + str(audio_path))
 
