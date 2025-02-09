@@ -171,14 +171,20 @@ def split_video_file(
     )
     typer.echo('✅ Transcription completed.')
 
-    transcription_path_txt = (
-        ROOT_DIR / 'output' / 'transcription_audio_file' / f'{file_name}.txt'
-    )
-    write_transcription(transcription_path_txt, trans_res)
-    transcription_path_json = (
-        ROOT_DIR / 'output' / 'transcription_audio_file' / f'{file_name}.json'
-    )
-    write_transcription(transcription_path_json, trans_res)
+    if trans_res is not None:
+        transcription_path_txt = (
+            ROOT_DIR / 'output' / 'transcription_audio_file' / f'{file_name}.txt'
+        )
+        write_transcription(transcription_path_txt, trans_res)
+        transcription_path_json = (
+            ROOT_DIR / 'output' / 'transcription_audio_file' / f'{file_name}.json'
+        )
+        write_transcription(transcription_path_json, trans_res)
+
+        transcriptions = [
+            {'start': seg[0], 'end': seg[1], 'text': str(seg[2])}
+            for seg in transcriptions
+        ]
 
     stat_dir = ROOT_DIR / 'output' / 'stats'
     stat_dir.mkdir(parents=True, exist_ok=True)
@@ -305,18 +311,20 @@ def transcribe_audio_file(
     )
     typer.echo('✅ Transcription completed.')
 
-    transcription_path_txt = (
-        ROOT_DIR / 'output' / 'transcription_audio_file' / f'{file_name}.txt'
-    )
-    write_transcription(transcription_path_txt, trans_res)
-    transcription_path_json = (
-        ROOT_DIR / 'output' / 'transcription_audio_file' / f'{file_name}.json'
-    )
-    write_transcription(transcription_path_json, trans_res)
+    if trans_res is not None:
+        transcription_path_txt = (
+            ROOT_DIR / 'output' / 'transcription_audio_file' / f'{file_name}.txt'
+        )
+        write_transcription(transcription_path_txt, trans_res)
+        transcription_path_json = (
+            ROOT_DIR / 'output' / 'transcription_audio_file' / f'{file_name}.json'
+        )
+        write_transcription(transcription_path_json, trans_res)
 
-    transcriptions = [
-        {'start': seg[0], 'end': seg[1], 'text': str(seg[2])} for seg in transcriptions
-    ]
+        transcriptions = [
+            {'start': seg[0], 'end': seg[1], 'text': str(seg[2])}
+            for seg in transcriptions
+        ]
 
     # Convert to DataFrame and strip trailing spaces
     df = pd.DataFrame(transcriptions)  # noqa: PD901
