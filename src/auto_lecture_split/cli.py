@@ -171,11 +171,11 @@ def split_video_file(
 
     if trans_res is not None:
         transcription_path_txt = (
-            ROOT_DIR / 'output' / 'transcription_audio_file' / f'{file_name}.txt'
+            ROOT_DIR / 'output' / 'transcription_video_file' / f'{file_name}.txt'
         )
         write_transcription(trans_res, transcription_path_txt)
         transcription_path_json = (
-            ROOT_DIR / 'output' / 'transcription_audio_file' / f'{file_name}.json'
+            ROOT_DIR / 'output' / 'transcription_video_file' / f'{file_name}.json'
         )
         write_transcription(trans_res, transcription_path_json)
 
