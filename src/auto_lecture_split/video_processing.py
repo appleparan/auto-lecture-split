@@ -14,6 +14,38 @@ from scenedetect.detectors.threshold_detector import ThresholdDetector
 from whisper.utils import get_writer
 
 
+def write_transcription(
+    whipser_result: list[dict[str, str | int | float]],
+    transcription_path: Path,
+) -> dict[str, str | int | float]:
+    """Writes the transcription result to a file.
+
+    Args:
+        whipser_result (list[dict[str, str | int | float]]):
+            A list of transcription segments (start, end, text) in VTT format.
+        transcription_path (Path): Path to save the transcription output.
+
+    Returns:
+        dict[str, str | int | float]: The transcription result.
+            its key are 'text', 'segments', 'language'.
+    """
+    # Create the transcription file directory
+    transcription_path.parent.mkdir(parents=True, exist_ok=True)
+
+    if transcription_path.suffix == '.vtt':
+        with transcription_path.open('w', encoding='utf-8') as file:
+            writer = get_writer('vtt', transcription_path.parent)
+            writer.write_result(whipser_result, file)
+    elif transcription_path.suffix == '.txt':
+        with transcription_path.open('w', encoding='utf-8') as file:
+            writer = get_writer('txt', transcription_path.parent)
+            writer.write_result(whipser_result, file)
+    elif transcription_path.suffix == '.json':
+        with transcription_path.open('w', encoding='utf-8') as file:
+            writer = get_writer('json', transcription_path.parent)
+            writer.write_result(whipser_result, file)
+
+
 def transcribe_audio(
     audio_path: Path,
     transcription_path: Path,
@@ -21,7 +53,7 @@ def transcribe_audio(
     language: str = 'ko',
     initial_prompt: str = '',
     overwrite: bool = False,  # noqa: FBT001, FBT002
-) -> list[dict[str, str | int | float]]:
+) -> tuple[list[dict[str, str | int | float]], dict[str, str | int | float]]:
     """Transcribes the given audio file using the Whisper model.
 
     Args:
@@ -39,6 +71,8 @@ def transcribe_audio(
     Returns:
         list[tuple[str, str, str]:
             A list of transcription segments (start, end, text) in VTT format
+        dict[str, str | int | float]: The transcription result.
+            its key are 'text', 'segments', 'language'.
     """
     model = whisper.load_model(size)
     if not overwrite and transcription_path.exists():
@@ -58,6 +92,7 @@ def transcribe_audio(
     # Create the transcription file directory
     transcription_path.parent.mkdir(parents=True, exist_ok=True)
 
+    # If extension is '.vtt', write the result to the file
     with transcription_path.open('w', encoding='utf-8') as file:
         writer = get_writer('vtt', transcription_path.parent)
         writer.write_result(result, file)
@@ -65,7 +100,7 @@ def transcribe_audio(
     return [
         (caption.start, caption.end, caption.text)
         for caption in webvtt.read(transcription_path.resolve())
-    ]
+    ], result
 
 
 def detect_slide_changes(

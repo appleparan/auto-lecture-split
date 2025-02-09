@@ -14,6 +14,7 @@ from auto_lecture_split.video_processing import (
     align_transcription_with_slides,
     detect_slide_changes,
     transcribe_audio,
+    write_transcription,
 )
 
 app = typer.Typer(pretty_exceptions_show_locals=False)
@@ -160,7 +161,7 @@ def split_video_file(
     transcription_path = (
         ROOT_DIR / 'output' / 'transcription_video_file' / f'{file_name}.vtt'
     )
-    transcriptions = transcribe_audio(
+    transcriptions, trans_res = transcribe_audio(
         audio_path,
         transcription_path=transcription_path,
         initial_prompt=initial_prompt,
@@ -169,6 +170,15 @@ def split_video_file(
         overwrite=overwrite,
     )
     typer.echo('✅ Transcription completed.')
+
+    transcription_path_txt = (
+        ROOT_DIR / 'output' / 'transcription_audio_file' / f'{file_name}.txt'
+    )
+    write_transcription(transcription_path_txt, trans_res)
+    transcription_path_json = (
+        ROOT_DIR / 'output' / 'transcription_audio_file' / f'{file_name}.json'
+    )
+    write_transcription(transcription_path_json, trans_res)
 
     stat_dir = ROOT_DIR / 'output' / 'stats'
     stat_dir.mkdir(parents=True, exist_ok=True)
@@ -285,7 +295,7 @@ def transcribe_audio_file(
     transcription_path = (
         ROOT_DIR / 'output' / 'transcription_audio_file' / f'{file_name}.vtt'
     )
-    transcriptions = transcribe_audio(
+    transcriptions, trans_res = transcribe_audio(
         audio_path,
         transcription_path=transcription_path,
         initial_prompt=initial_prompt,
@@ -294,6 +304,15 @@ def transcribe_audio_file(
         overwrite=overwrite,
     )
     typer.echo('✅ Transcription completed.')
+
+    transcription_path_txt = (
+        ROOT_DIR / 'output' / 'transcription_audio_file' / f'{file_name}.txt'
+    )
+    write_transcription(transcription_path_txt, trans_res)
+    transcription_path_json = (
+        ROOT_DIR / 'output' / 'transcription_audio_file' / f'{file_name}.json'
+    )
+    write_transcription(transcription_path_json, trans_res)
 
     transcriptions = [
         {'start': seg[0], 'end': seg[1], 'text': str(seg[2])} for seg in transcriptions
