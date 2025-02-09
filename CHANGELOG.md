@@ -1,3 +1,29 @@
+## [0.3.0] - 2025-02-09
+
+### Bug Fixes
+
+- Handle the case when file already exists ([1ef1c6d](https://github.com/vince-test-org/changelog-generator-example/commit/1ef1c6d1fde56f8bc7ddbb075ed437c2821aa9d3))
+- Fix invalid argument ordering ([c855e1e](https://github.com/vince-test-org/changelog-generator-example/commit/c855e1e12d30d3a6d6f5a4ba52f3837789c3a617))
+- Fix mistypo ([46aab51](https://github.com/vince-test-org/changelog-generator-example/commit/46aab5140d31ea93d686557a611e67f3dbed6a1a))
+
+### Documentation
+
+- Update README ([7d894b0](https://github.com/vince-test-org/changelog-generator-example/commit/7d894b0508fa930f2b4eeaa86f42cb36bdbcdbef))
+
+### Features
+
+- Transribe with audio only ([982fee0](https://github.com/vince-test-org/changelog-generator-example/commit/982fee07fba50b0f027358e9028a4bb321845f76))
+- Add more format to write transcription ([8ab2f46](https://github.com/vince-test-org/changelog-generator-example/commit/8ab2f468f572757fd0b29f66d0d451ff8df9627f))
+- Revamp slide detection algorithm ([1e3b1f8](https://github.com/vince-test-org/changelog-generator-example/commit/1e3b1f8f6c23c5c133e7c234df09b8b3b20562f0))
+
+### Refactor
+
+- Modularize and group functions for better structure ([b24b1cc](https://github.com/vince-test-org/changelog-generator-example/commit/b24b1cc4fc83e653b680fd2e03e1acfc7a6e635b))
+
+### Build
+
+- Sync release script to recent version ([86040b2](https://github.com/vince-test-org/changelog-generator-example/commit/86040b23441b4d23037511ab3a50971e6cfe95c7))
+
 ## [0.2.3] - 2025-01-30
 
 ### Bug Fixes
@@ -7,6 +33,7 @@
 ### Documentation
 
 - Update README ([039b788](https://github.com/vince-test-org/changelog-generator-example/commit/039b7881bc4e8d14d3b5f1638910c2f33739459f))
+- Add CHANGELOG.md and RELEASE.md to release v0.2.3 ([d2543d9](https://github.com/vince-test-org/changelog-generator-example/commit/d2543d9a17f83db474c2629bdb811939b9252c00))
 
 ### Miscellaneous Tasks
 

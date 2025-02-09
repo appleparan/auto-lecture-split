@@ -1,6 +1,6 @@
 [project]
 name = "auto_lecture_split"
-version = "0.2.3"
+version = "0.3.0"
 description = "Automatically transcribes lecture videos using Whisper and segments text based on slide transitions"
 authors = [
     {name="Jongsu Liam Kim", email="jongsukim8@gmail.com"}
