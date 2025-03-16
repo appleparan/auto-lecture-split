@@ -233,6 +233,100 @@ def split_video_file(
 
 
 @app.command()
+def transcribe_video_file(
+    video_path: Annotated[str, typer.Argument(help='Path to the input video file.')],
+    whipser_model: Annotated[
+        WhisperModelName,
+        typer.Option(
+            help=(
+                'Model size to use for transcription. '
+                'Available options are '
+                '"tiny", "small", "medium", "large", "turbo".'
+            ),
+            autocompletion=autocomplete_whisper_model_name,
+        ),
+    ] = WhisperModelName.turbo,
+    initial_prompt_path: Annotated[
+        str,
+        typer.Option(
+            help='Path to the initial prompt file.',
+        ),
+    ] = '',
+    language: Annotated[
+        str,
+        typer.Option(
+            help='Language code for the transcription.',
+        ),
+    ] = 'ko',
+    overwrite: Annotated[  # noqa: FBT002
+        bool,
+        typer.Option(
+            help='Whether to overwrite the existing output files.',
+        ),
+    ] = False,
+) -> None:
+    """Extract, transcribe, and split the video file into slides.
+
+    Args:
+        video_path (Annotated[str, typer.Argument):
+            Path to the input video file. Defaults to 'Path to the input video file.')].
+        whipser_model (Annotated[ WhisperModelName, typer.Option, optional):
+             Model size to use for transcription. Defaults to WhisperModelName.turbo
+        initial_prompt_path (Annotated[ str, typer.Option, optional):
+            Path to the initial prompt file. Defaults to ''.
+        language (Annotated[ str, typer.Option, optional):
+            Language code for the transcription.. Defaults to 'ko'.
+        overwrite (_type_, optional): Whether to overwrite the existing output files.
+            Defaults to False.
+    """
+    # Check if the video file is in MKV format
+    video_path = Path(video_path)
+    if video_path.suffix.lower() == '.mkv':
+        typer.echo('🎬 Converting video file to MP4 format...')
+        video_path = convert_to_mp4(video_path, overwrite=overwrite)
+        typer.echo('📁 Video file is saved at: ' + str(video_path))
+
+    typer.echo('🎙️ Transcribing audio...')
+
+    file_name = Path(video_path).stem
+    audio_path = ROOT_DIR / 'output' / 'audio' / f'{file_name}.wav'
+    extract_audio(Path(video_path), Path(audio_path), overwrite=overwrite)
+    typer.echo('✅ Audio is save at: ' + str(audio_path))
+
+    # Transcribe the audio
+    ## Get initial prompt from the initial_prompt_path
+    if initial_prompt_path or initial_prompt_path != '':
+        with Path(initial_prompt_path).open('r') as f:
+            initial_prompt = f.read()
+    transcription_path = (
+        ROOT_DIR / 'output' / 'transcription_video_file' / f'{file_name}.vtt'
+    )
+    transcriptions, trans_res = transcribe_audio(
+        audio_path,
+        transcription_path=transcription_path,
+        initial_prompt=initial_prompt,
+        size=whipser_model,
+        language=language,
+        overwrite=overwrite,
+    )
+    typer.echo('✅ Transcription completed.')
+
+    if trans_res is not None:
+        transcription_path_txt = (
+            ROOT_DIR / 'output' / 'transcription_video_file' / f'{file_name}.txt'
+        )
+        write_transcription(trans_res, transcription_path_txt)
+        transcription_path_json = (
+            ROOT_DIR / 'output' / 'transcription_video_file' / f'{file_name}.json'
+        )
+        write_transcription(trans_res, transcription_path_json)
+
+    transcriptions = [
+        {'start': seg[0], 'end': seg[1], 'text': str(seg[2])} for seg in transcriptions
+    ]
+
+
+@app.command()
 def transcribe_audio_file(
     audio_path: Annotated[str, typer.Argument(help='Path to the input audio file.')],
     whipser_model: Annotated[
